@@ -1,0 +1,15 @@
+{
+  "name": "ai_project",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "ai:gen": "node generateTest.js",
+    "ai:test": "npx playwright test --config=playwright.config.mjs",
+    "ai:analyze": "node analyze/analyzeFailures.js",
+    "ai:report": "node analyze/analyzeFailures.js --html",
+    "ai:flow": "npm run ai:gen && npm run ai:test && npm run ai:report"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1"
+  }
+}
