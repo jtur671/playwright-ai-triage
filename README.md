@@ -91,7 +91,7 @@ git clone https://github.com/jtur671/playwright-ai-triage.git
 cd playwright-ai-triage
 npm install
 npx playwright install
-export OPENAI_API_KEY="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"
+export OPENAI_API_KEY="your-key"
 ```
 
 ---
