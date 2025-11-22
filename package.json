@@ -12,6 +12,7 @@
     "test:watch": "node --test --watch utils/__tests__/**/*.test.js"
   },
   "devDependencies": {
-    "@playwright/test": "1.56.1"
+    "@playwright/test": "1.56.1",
+    "dotenv": "^16.6.1"
   }
 }

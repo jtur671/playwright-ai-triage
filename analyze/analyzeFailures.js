@@ -4,6 +4,7 @@ import path from 'path';
 import { exec } from 'child_process';
 import { fileURLToPath } from 'url';
 import OpenAI from 'openai';
+import 'dotenv/config';
 
 const client = new OpenAI({ apiKey: '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' });
 

@@ -221,17 +221,23 @@ Ways to reduce intermittent failures.
 
 ## 📦 Environment Variables
 
-Set your OpenAI key:
+Set your OpenAI key using one of these methods:
 
+**Option 1: Export (recommended for quick setup)**
 ```bash
 export OPENAI_API_KEY="your-key"
 ```
 
-Or add to a `.env` file (if using dotenv):
-
+**Option 2: .env file (recommended for persistence)**
 ```bash
+# Copy the example file
+cp .env.example .env
+
+# Edit .env and add your key
 OPENAI_API_KEY=your-key
 ```
+
+Both methods work! If you use `export`, it takes precedence over the `.env` file.
 
 ---
 
