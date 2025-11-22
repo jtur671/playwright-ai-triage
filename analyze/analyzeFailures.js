@@ -1,9 +1,14 @@
 // analyze/analyzeFailures.js
 import fs from 'fs';
+import path from 'path';
 import { exec } from 'child_process';
+import { fileURLToPath } from 'url';
 import OpenAI from 'openai';
 
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // CLI flag: --html means "also build & open HTML report"
 const args = process.argv.slice(2);
@@ -473,8 +478,34 @@ async function main() {
       ...(firstResult.stderr || []).map(e => e.text).filter(Boolean),
     ].join('\n');
 
+    // Try to map this test to a story file: e.g.
+    // "Add/Remove Elements - wrong expectations (the-internet.herokuapp.com)"
+    //   → slug "add_remove_elements" → stories/add_remove_elements.md
+    let storyContext = '';
+    try {
+      const rawTitle = test.title || '';
+      const slug = rawTitle
+        .split(' - ')[0]               // "Add/Remove Elements"
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '_')   // "add_remove_elements"
+        .replace(/^_+|_+$/g, '');
+
+      const storyPath = path.join(__dirname, '..', 'stories', `${slug}.md`);
+
+      if (fs.existsSync(storyPath)) {
+        const storyText = fs.readFileSync(storyPath, 'utf8');
+        storyContext = `\n\nRelated user story (including Base URL and acceptance criteria):\n${storyText}`;
+      }
+    } catch (e) {
+      // If anything goes wrong, we just skip story context
+      storyContext = '';
+    }
+
     const prompt = `
 You are a senior QA engineer specializing in Playwright.
+
+The application under test is the public demo app at:
+https://the-internet.herokuapp.com
 
 Test title: ${test.title}
 Project: ${test.project || 'n/a'}
@@ -488,6 +519,9 @@ ${error.stack || 'N/A'}
 
 Stdout / Stderr:
 ${logs || 'N/A'}
+${storyContext}
+
+Use your knowledge of this demo application and the provided Base URL + story details to ground your answer in the real behavior of that page.
 
 Tasks:
 Return your answer as an HTML snippet only (no <html> or <body> tags).
@@ -495,10 +529,13 @@ Use headings (<h3>), paragraphs (<p>), ordered/unordered lists (<ol>, <ul>), and
 Do NOT use markdown, do NOT include backticks.
 
 Include:
-1. A short heading "Plain-English Explanation" and a paragraph explaining why this test likely failed.
-2. A heading "Probable Root Causes" with a bulleted or numbered list of 2–3 items.
-3. A heading "Suggested Test Fixes" with a list of 2 concrete Playwright code fix ideas.
-4. A heading "Flakiness Mitigation" with 1–2 ideas to make the test less flaky.
+1. A short heading "Plain-English Explanation" and a paragraph explaining why this test likely failed, referencing the actual behavior of the page at the given path when you can infer it.
+
+2. A heading "Probable Root Causes" with a bulleted or numbered list of 2–3 items. Use realistic causes based on the real page under test (e.g., how many elements actually appear, how the UI behaves, typical selectors, etc.).
+
+3. A heading "Suggested Test Fixes" with a list of 2 concrete Playwright code fix ideas that would make the test align with the real behavior of that page.
+
+4. A heading "Flakiness Mitigation" with 1–2 ideas to make this test less flaky.
 `;
 
     const res = await client.responses.create({

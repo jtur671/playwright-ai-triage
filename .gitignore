@@ -5,6 +5,8 @@ node_modules/
 test-results/
 playwright-report/
 playwright/.cache/
+tests/**/*
+!tests/.gitkeep
 
 # Generated reports
 ai-report.html

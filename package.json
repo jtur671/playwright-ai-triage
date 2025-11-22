@@ -7,7 +7,9 @@
     "ai:test": "npx playwright test --config=playwright.config.mjs",
     "ai:analyze": "node analyze/analyzeFailures.js",
     "ai:report": "node analyze/analyzeFailures.js --html",
-    "ai:flow": "npm run ai:gen && npm run ai:test && npm run ai:report"
+    "ai:flow": "npm run ai:gen && (npm run ai:test || true) && npm run ai:report",
+    "test": "node --test utils/__tests__/**/*.test.js",
+    "test:watch": "node --test --watch utils/__tests__/**/*.test.js"
   },
   "devDependencies": {
     "@playwright/test": "1.56.1"
